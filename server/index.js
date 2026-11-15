@@ -28,7 +28,7 @@ const app = createApp({ db, config, push });
 const server = http.createServer((req, res) => { app.handle(req, res); });
 server.listen(config.port, () => {
   console.log(`${config.appName} is running on http://localhost:${config.port}`);
-  console.log(`Family code: ${app.getFamilyCode()}   (set FAMILY_CODE to change it)`);
+  console.log(`Family code: ${app.getFamilyCode()}   (change it in the app: Me → Admin → Family code)`);
   console.log(`Time zone: ${config.timeZone}. The first person to join becomes the admin.`);
 });
 
