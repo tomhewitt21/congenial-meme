@@ -38,7 +38,7 @@ The first person to join becomes the admin. Data lives in `data/wordclub.db`.
 ### On Windows
 
 1. Install Node.js (LTS) from https://nodejs.org, or run `winget install OpenJS.NodeJS.LTS`. Then **close and reopen** Command Prompt and check that `node -v` shows v22.5 or later.
-2. Get the code: `git clone https://github.com/tomhewitt21/congenial-meme.git`, then `cd congenial-meme`. If you don't have Git, download the ZIP from GitHub instead and unzip it.
+2. Get the code: `git clone -b claude/local-vocab-community-app-71ebno https://github.com/tomhewitt21/congenial-meme.git`, then `cd congenial-meme`. (Once this branch is merged, plain `git clone` is enough.) If you don't have Git, download the ZIP from that branch on GitHub instead and unzip it.
 3. Run these in that folder:
 
 ```bat
