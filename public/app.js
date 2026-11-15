@@ -551,7 +551,10 @@ async function enableNotifications() {
     return false;
   }
   const perm = await Notification.requestPermission();
-  if (perm !== 'granted') { toast('Notifications are off. You can turn them on in Settings.'); return false; }
+  if (perm !== 'granted') {
+    toast(isIOS ? 'Notifications are blocked. Open iPhone Settings → Notifications → Word Club and turn on Allow Notifications.' : 'Notifications are blocked for this site in your browser settings.');
+    return false;
+  }
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
   if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToUint8(state.config.vapidPublicKey) });
@@ -589,6 +592,28 @@ function maybeAskForNotifications() {
 }
 
 // ---------------------------------------------------------------- me
+
+// One line describing this phone's notification set-up, so problems are visible.
+function diagLine(sub, me) {
+  const parts = [];
+  if (isIOS) parts.push(isStandalone ? 'Opened from Home Screen' : 'Opened in Safari (notifications need the Home Screen app)');
+  parts.push(`Permission: ${'Notification' in window ? Notification.permission : 'not supported'}`);
+  parts.push(`This phone registered: ${sub ? 'yes' : 'no'}`);
+  parts.push(`Devices on your profile: ${me.pushDevices}`);
+  return parts.join(' · ');
+}
+
+// Turn the server's push result into plain English.
+function explainPush(out) {
+  if (out.sent) return 'Sent. It should arrive within a few seconds.';
+  if (!out.devices) return 'The server has no device for you. Tap Reset.';
+  const f = out.failed[0] || {};
+  if (f.status === 403 && /BadJwtToken|jwt/i.test(f.reason)) return "Apple rejected the server's sender details. The site owner needs to set VAPID_SUBJECT to mailto: plus a real email address.";
+  if (f.status === 404 || f.status === 410) return "This phone's registration had expired. Tap Reset.";
+  if (f.status === 400 || f.status === 403) return `Push service refused it (${f.status}: ${f.reason || 'no reason given'}). Tap Reset.`;
+  return `Couldn't send (${f.status || 'network'}: ${f.reason || 'unknown error'}).`;
+}
+
 async function viewMe() {
   renderTabs('me');
   const me = await api('GET', '/api/me');
@@ -602,7 +627,8 @@ async function viewMe() {
     notifyBlock = `
       <div class="setting"><label class="lbl" for="nt">Daily word at</label><input type="time" id="nt" value="${esc(me.notifyTime)}"></div>
       <div class="setting"><label class="lbl" for="nr">Replies to my comments</label><input type="checkbox" role="switch" class="toggle" id="nr" ${me.notifyReplies ? 'checked' : ''}></div>
-      <div class="setting"><span class="lbl">Notifications are on</span><button class="btn small secondary" id="test">Send a test</button></div>`;
+      <div class="setting"><span class="lbl">Notifications are on</span><button class="btn small secondary" id="test">Send a test</button></div>
+      <div class="setting"><span class="lbl">Not arriving?<small>Sets this phone up again from scratch.</small></span><button class="btn small secondary" id="reset">Reset</button></div>`;
   } else if (!pushSupported) {
     notifyBlock = `<div class="setting"><span class="lbl">Notifications<small>${isIOS && !isStandalone ? 'Add the app to your Home Screen to turn these on.' : "This browser doesn't support them."}</small></span></div>`;
   } else {
@@ -623,6 +649,7 @@ async function viewMe() {
 
     <h2 class="section-label">Notifications</h2>
     <div class="list">${notifyBlock}</div>
+    <p class="diag" id="diag">${esc(diagLine(sub, me))}</p>
 
     <h2 class="section-label">Profile</h2>
     <form class="list" id="profile">
@@ -657,8 +684,21 @@ async function viewMe() {
       // Make sure the server has this device's subscription, then ask it to send one.
       const s = await currentSubscription();
       if (s) await api('POST', '/api/push/subscribe', { subscription: s.toJSON() });
-      const { sent } = await api('POST', '/api/push/test');
-      toast(sent ? 'Sent. It should arrive in a few seconds.' : 'No device to send to. Try turning notifications off and on.');
+      const out = await api('POST', '/api/push/test');
+      const msg = explainPush(out);
+      document.getElementById('diag').textContent = `${diagLine(s, me)} · Last test: ${msg}`;
+      toast(msg);
+    } catch (err) { toast(err.message); }
+  });
+  document.getElementById('reset')?.addEventListener('click', async () => {
+    try {
+      const s = await currentSubscription();
+      if (s) { await api('POST', '/api/push/unsubscribe', { endpoint: s.endpoint }).catch(() => {}); await s.unsubscribe(); }
+      if (await enableNotifications()) {
+        const out = await api('POST', '/api/push/test');
+        toast(explainPush(out));
+      }
+      viewMe();
     } catch (err) { toast(err.message); }
   });
   const $pn = document.getElementById('pn');

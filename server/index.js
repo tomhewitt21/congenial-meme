@@ -30,6 +30,9 @@ server.listen(config.port, () => {
   console.log(`${config.appName} is running on http://localhost:${config.port}`);
   console.log(`Family code: ${app.getFamilyCode()}   (change it in the app: Me → Admin → Family code)`);
   console.log(`Time zone: ${config.timeZone}. The first person to join becomes the admin.`);
+  if (!process.env.VAPID_SUBJECT) {
+    console.warn('WARNING: VAPID_SUBJECT is not set. iPhone notifications may be rejected. Set it to mailto:you@yourdomain.');
+  }
 });
 
 // Check every minute whether anyone's daily notification is due.

@@ -223,10 +223,10 @@ export function createApp({ db, config, push }) {
       let body = 'Tap to see them and add a sentence of your own.';
       if (others.length === 1) body = `${others[0]} has already commented.`;
       else if (others.length > 1) body = `${others[0]} and ${others.length - 1} other${others.length > 2 ? 's have' : ' has'} already commented.`;
-      sent += await push.sendToUser(u.id, {
+      sent += (await push.sendToUser(u.id, {
         title: words.length === 1 ? `Today's word: ${words[0]}` : `Today's words: ${words.join(' & ')}`,
         body, url: '/', tag: `daily-${t}`,
-      });
+      })).sent;
     }
     return sent;
   }
@@ -410,8 +410,8 @@ export function createApp({ db, config, push }) {
   });
 
   route('POST', '/api/push/test', async ({ me }) => {
-    const sent = await push.sendToUser(me.id, { title: 'Notifications are working', body: "You'll get the daily word here.", url: '/' });
-    return { sent };
+    const out = await push.sendToUser(me.id, { title: 'Notifications are working', body: "You'll get the daily word here.", url: '/' });
+    return out;
   });
 
   // ---------- admin ----------

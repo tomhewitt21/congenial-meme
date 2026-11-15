@@ -11,7 +11,7 @@ let clock = new Date('2026-11-16T07:30:00Z'); // 07:30 in London
 const sentPushes = [];
 const push = {
   publicKey: 'test-key',
-  async sendToUser(userId, payload) { sentPushes.push({ userId, payload }); return 1; },
+  async sendToUser(userId, payload) { sentPushes.push({ userId, payload }); return { sent: 1, failed: [], devices: 1 }; },
 };
 const db = openDb(':memory:');
 const app = createApp({
