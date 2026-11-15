@@ -33,7 +33,7 @@ FAMILY_CODE=RAINY-OTTER npm start
 # → http://localhost:3000
 ```
 
-The first person to join becomes the admin. Data lives in `data/wordclub.db`.
+The first person to join becomes the admin. Data lives in `data/wordclub.db`. `FAMILY_CODE` only sets the starting code: after that, change it in the app (Me → Admin → Family code) and it stays changed.
 
 ### On Windows
 

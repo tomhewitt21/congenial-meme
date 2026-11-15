@@ -54,10 +54,10 @@ export function createApp({ db, config, push }) {
   const wordsPerDay = () => Number(getSetting(db, 'words_per_day') || config.wordsPerDay || 2);
 
   // ---------- first-run setup ----------
+  // FAMILY_CODE only sets the starting code. After that the admin changes it in the app,
+  // and a restart must not undo that.
   if (!getSetting(db, 'family_code')) {
     setSetting(db, 'family_code', config.familyCode || makeFamilyCode());
-  } else if (config.familyCode && getSetting(db, 'family_code') !== config.familyCode) {
-    setSetting(db, 'family_code', config.familyCode);
   }
   if (!getSetting(db, 'words_per_day')) setSetting(db, 'words_per_day', config.wordsPerDay || 2);
   const wordCount = db.prepare('SELECT COUNT(*) AS n FROM words').get().n;

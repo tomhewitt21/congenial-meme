@@ -162,3 +162,11 @@ test('static files are served and paths cannot escape public/', async () => {
   const esc = await fetch(`${base}/..%2fpackage.json`);
   assert.notEqual(esc.status, 200);
 });
+
+test('family code changed in the app survives a restart', async () => {
+  const r = await call('PATCH', '/api/admin/settings', { familyCode: 'misty-heron' }, admin.token);
+  assert.equal(r.data.familyCode, 'MISTY-HERON');
+  // "Restart": a new app on the same database, still started with the old FAMILY_CODE.
+  const again = createApp({ db, push, config: { appName: 'Test Club', timeZone: 'Europe/London', familyCode: 'RAINY-OTTER', publicDir: path.join(root, 'public'), now: () => clock } });
+  assert.equal(again.getFamilyCode(), 'MISTY-HERON');
+});
