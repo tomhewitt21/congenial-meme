@@ -35,6 +35,20 @@ FAMILY_CODE=RAINY-OTTER npm start
 
 The first person to join becomes the admin. Data lives in `data/wordclub.db`.
 
+### On Windows
+
+1. Install Node.js (LTS) from https://nodejs.org, or run `winget install OpenJS.NodeJS.LTS`. Then **close and reopen** Command Prompt and check that `node -v` shows v22.5 or later.
+2. Get the code: `git clone https://github.com/tomhewitt21/congenial-meme.git`, then `cd congenial-meme`. If you don't have Git, download the ZIP from GitHub instead and unzip it.
+3. Run these in that folder:
+
+```bat
+npm install
+set FAMILY_CODE=RAINY-OTTER
+npm start
+```
+
+In PowerShell, use `$env:FAMILY_CODE="RAINY-OTTER"` instead of `set`. Then open http://localhost:3000.
+
 ## Share it with family
 
 Phones can only install the app and get notifications over **HTTPS**, so it needs a public `https://` address. The two easy routes:
